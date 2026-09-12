@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#090d10" />
-  <meta name="description" content="Observe — internal activity, reveal, marketplace, portfolio and fee monitoring for Chosen." />
+  <meta name="description" content="Observe — internal operations and event monitoring for Chosen." />
   <title>Observe — Platform Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,18 +15,18 @@
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand-row">
-        <div class="brand-kicker">OBSERVE</div>
+        <div>
+          <div class="brand-kicker">OBSERVE</div>
+          <div class="brand-sub">Chosen operations</div>
+        </div>
         <button class="icon-button mobile-only" id="closeSidebar" aria-label="Close navigation">×</button>
       </div>
 
       <nav class="nav" aria-label="Observe navigation">
-        <div class="nav-group-label">OPERATIONS</div>
+        <div class="nav-group-label">OBSERVE</div>
         <button class="nav-parent active-parent" type="button">
-          <span class="nav-icon pulse-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M2 12h4l2.4-7 4.2 14 3-9 2 2H22"/></svg>
-          </span>
-          <span>Activity</span>
-          <span class="chevron">⌄</span>
+          <span class="nav-icon pulse-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12h4l2.4-7 4.2 14 3-9 2 2H22"/></svg></span>
+          <span>Platform</span><span class="chevron">⌄</span>
         </button>
         <div class="subnav">
           <button class="nav-item active" data-view="activity"><span>Activity</span><span class="live-dot"></span></button>
@@ -34,15 +34,16 @@
           <button class="nav-item" data-view="reveals">Reveal Monitor</button>
           <button class="nav-item" data-view="market">Secondary Market</button>
           <button class="nav-item" data-view="portfolios">Portfolios</button>
+          <button class="nav-item" data-view="wallets">Wallet & Payments</button>
           <button class="nav-item" data-view="fees">Fee Tracker</button>
+          <button class="nav-item" data-view="rewards">Rewards & Credits</button>
+          <button class="nav-item" data-view="recon">Reconciliation</button>
+          <button class="nav-item" data-view="catalog">Event Catalog</button>
         </div>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="system-health">
-          <span class="health-dot"></span>
-          <div><strong>All systems normal</strong><span>Event stream connected</span></div>
-        </div>
+        <div class="system-health"><span class="health-dot"></span><div><strong>All systems normal</strong><span>Event stream connected</span></div></div>
         <div class="env-row"><span>Environment</span><strong>Production</strong></div>
       </div>
     </aside>
@@ -50,10 +51,8 @@
     <div class="main-shell">
       <header class="topbar">
         <button class="icon-button mobile-only" id="openSidebar" aria-label="Open navigation">☰</button>
-        <div class="topbar-title">
-          <span class="eyebrow" id="sectionEyebrow">ACTIVITY</span>
-          <h1 id="pageTitle">Platform activity</h1>
-        </div>
+        <div class="topbar-title"><span class="eyebrow" id="sectionEyebrow">ACTIVITY</span><h1 id="pageTitle">Platform activity</h1></div>
+        <div class="global-search-wrap"><span>⌕</span><input id="globalSearch" placeholder="Search user, tx, item, offer, correlation…" /></div>
         <div class="topbar-actions">
           <div class="live-pill"><span class="live-dot"></span><span>Live</span></div>
           <button class="outline-button" id="exportButton">Export CSV</button>
@@ -63,73 +62,83 @@
 
       <main class="content">
         <section class="view active" id="view-activity" data-title="Platform activity" data-eyebrow="ACTIVITY">
-          <div class="section-intro">
-            <div><h2>Everything happening on the platform</h2><p>A single, immutable event ledger across crates, wallets, stocks, transfers, marketplace actions and settlements.</p></div>
-            <div class="timestamp">Updated <span id="lastUpdated">just now</span></div>
-          </div>
-
+          <div class="section-intro"><div><h2>Everything happening on Chosen</h2><p>One operational ledger for user actions, system actions, ownership changes, money movement, credits, fees, exceptions and analytics.</p></div><div class="timestamp">Updated <span id="lastUpdated">just now</span></div></div>
           <div class="metric-grid four" id="activityMetrics"></div>
-
           <div class="panel">
-            <div class="panel-header wrap">
-              <div><h3>Event stream</h3><p>Search any user, event, asset, order, transaction or reference ID.</p></div>
-              <div class="panel-tools">
-                <label class="search-box"><span>⌕</span><input id="activitySearch" type="search" placeholder="Search activity…" /></label>
-                <select class="select-control" id="activityCategory"><option value="all">All categories</option></select>
-                <select class="select-control" id="activityRail"><option value="all">All rails</option><option>Cash</option><option>USDC</option><option>On-chain</option><option>Internal</option></select>
-              </div>
-            </div>
+            <div class="panel-header wrap"><div><h3>Universal event stream</h3><p>Follow an entire lifecycle from entry → reveal → ownership → sale / transfer / redemption.</p></div><div class="panel-tools"><label class="search-box"><span>⌕</span><input id="activitySearch" type="search" placeholder="Search activity…" /></label><select class="select-control" id="activityCategory"><option value="all">All categories</option></select><select class="select-control" id="activityRail"><option value="all">All rails</option></select></div></div>
             <div class="quick-filters" id="activityQuickFilters"></div>
-            <div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>User</th><th>Asset / reference</th><th>Amount</th><th>Rail</th><th>Status</th><th></th></tr></thead><tbody id="activityTable"></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>User</th><th>Asset / reference</th><th>Amount</th><th>Rail</th><th>Status</th><th>Correlation</th><th></th></tr></thead><tbody id="activityTable"></tbody></table></div>
           </div>
         </section>
 
         <section class="view" id="view-purchases" data-title="Purchases" data-eyebrow="ACTIVITY / PURCHASES">
-          <div class="section-intro"><div><h2>Purchase ledger</h2><p>Every crate and stock pack purchase, with payment rail segregation enforced from entry through cashout.</p></div><div class="legend"><span><i class="dot cash"></i>Cash</span><span><i class="dot usdc"></i>USDC</span></div></div>
+          <div class="section-intro"><div><h2>Purchase ledger</h2><p>Crates, stock packs, batches, entry rail, payment status, Crate Bonus, XP and downstream reveal linkage.</p></div><div class="legend"><span><i class="dot cash"></i>Cash</span><span><i class="dot usdc"></i>USDC</span><span><i class="dot credits"></i>Credits</span></div></div>
           <div class="metric-grid four" id="purchaseMetrics"></div>
           <div class="two-col">
-            <div class="panel rail-policy"><div class="panel-header"><div><h3>Rail integrity</h3><p>Source-of-funds rules are visible at a glance.</p></div></div><div class="policy-stack">
-              <div class="policy-row"><span class="rail-badge cash">CASH</span><div><strong>Sneaker / streetwear crate</strong><p>Cash purchase → cash proceeds only.</p></div><span class="policy-ok">✓</span></div>
-              <div class="policy-row"><span class="rail-badge usdc">USDC</span><div><strong>Sneaker / streetwear crate</strong><p>USDC purchase → USDC proceeds only.</p></div><span class="policy-ok">✓</span></div>
-              <div class="policy-row"><span class="rail-badge stock">STOCK</span><div><strong>Stock pack</strong><p>Cash only. Winning stock is purchased and attributed to the user portfolio.</p></div><span class="policy-ok">✓</span></div>
+            <div class="panel"><div class="panel-header"><div><h3>Rail integrity</h3><p>The original funding rail remains attached to the lifecycle.</p></div></div><div class="policy-stack">
+              <div class="policy-row"><span class="rail-badge cash">CASH</span><div><strong>Collectible crate</strong><p>Cash entry → cash cashout only.</p></div><span class="policy-ok">✓</span></div>
+              <div class="policy-row"><span class="rail-badge usdc">USDC</span><div><strong>Collectible crate</strong><p>USDC entry → USDC cashout only.</p></div><span class="policy-ok">✓</span></div>
+              <div class="policy-row"><span class="rail-badge credits">CREDITS</span><div><strong>Credits crate</strong><p>Credits entry → Credit Back only.</p></div><span class="policy-ok">✓</span></div>
+              <div class="policy-row"><span class="rail-badge stock">STOCK</span><div><strong>Stock pack</strong><p>Cash only. Result is purchased and assigned to user portfolio.</p></div><span class="policy-ok">✓</span></div>
             </div></div>
-            <div class="panel"><div class="panel-header"><div><h3>Volume by product</h3><p>Gross entry value, before reveal outcomes.</p></div></div><div id="purchaseBars" class="bar-list"></div></div>
+            <div class="panel"><div class="panel-header"><div><h3>Volume by product</h3><p>Gross entry value before outcomes.</p></div></div><div id="purchaseBars" class="bar-list"></div></div>
           </div>
-          <div class="panel"><div class="panel-header wrap"><div><h3>Recent purchases</h3><p>Purchase intent, settlement and downstream reveal linkage.</p></div><label class="search-box"><span>⌕</span><input id="purchaseSearch" type="search" placeholder="User, pack or purchase ID…" /></label></div><div class="table-wrap"><table><thead><tr><th>Purchase</th><th>User</th><th>Product</th><th>Entry</th><th>Rail</th><th>Payment reference</th><th>Reveal</th><th>Status</th><th></th></tr></thead><tbody id="purchaseTable"></tbody></table></div></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Recent purchases</h3><p>Every purchase intent and settlement.</p></div><label class="search-box"><span>⌕</span><input id="purchaseSearch" placeholder="User, pack, purchase ID…" /></label></div><div class="table-wrap"><table><thead><tr><th>Purchase</th><th>User</th><th>Product</th><th>Qty</th><th>Entry</th><th>Rail</th><th>Crate Bonus</th><th>XP</th><th>Reveal</th><th>Status</th><th></th></tr></thead><tbody id="purchaseTable"></tbody></table></div></div>
         </section>
 
         <section class="view" id="view-reveals" data-title="Reveal Monitor" data-eyebrow="ACTIVITY / REVEALS">
-          <div class="section-intro"><div><h2>Reveal monitor</h2><p>Trace commit → reveal → prize → user decision, with fairness and liability checks in one timeline.</p></div><button class="outline-button" id="onlyExceptions">Show exceptions</button></div>
+          <div class="section-intro"><div><h2>Reveal monitor</h2><p>Commit → locked outcomes → selection → reveal → FMV → fairness verification → user decision.</p></div><button class="outline-button" id="onlyExceptions">Show exceptions</button></div>
           <div class="metric-grid four" id="revealMetrics"></div>
-          <div class="panel"><div class="panel-header wrap"><div><h3>Reveal lifecycle</h3><p>FMV is captured at reveal and user action; every state change remains auditable.</p></div><label class="search-box"><span>⌕</span><input id="revealSearch" type="search" placeholder="Reveal, user, item…" /></label></div><div class="table-wrap"><table><thead><tr><th>Reveal</th><th>User</th><th>Pack</th><th>Outcome</th><th>FMV</th><th>Decision</th><th>Fairness</th><th>Status</th><th></th></tr></thead><tbody id="revealTable"></tbody></table></div></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Reveal lifecycle</h3><p>Pity, duplicate rerolls, stale quotes and fairness mismatches are explicit events.</p></div><label class="search-box"><span>⌕</span><input id="revealSearch" placeholder="Reveal, user, item…" /></label></div><div class="table-wrap"><table><thead><tr><th>Reveal</th><th>User</th><th>Pack</th><th>Outcome</th><th>FMV</th><th>Decision</th><th>Fairness</th><th>Flags</th><th>Status</th><th></th></tr></thead><tbody id="revealTable"></tbody></table></div></div>
         </section>
 
         <section class="view" id="view-market" data-title="Secondary Market" data-eyebrow="ACTIVITY / MARKET">
-          <div class="section-intro"><div><h2>Secondary market</h2><p>Listings, offers, acceptances, declines, cancellations, sales and transfers — tied back to original ownership.</p></div><div class="timestamp">Marketplace events are part of the global ledger</div></div>
+          <div class="section-intro"><div><h2>Secondary market</h2><p>Offer-only inventory, fixed-price listings, offers, counters, sales, ownership transfer and fee settlement.</p></div><div class="timestamp">Every state is correlated to the item</div></div>
           <div class="metric-grid four" id="marketMetrics"></div>
-          <div class="panel"><div class="panel-header wrap"><div><h3>Market event stream</h3><p>Follow the full lifecycle of an item without losing custody history.</p></div><div class="segmented" id="marketFilter"><button class="active" data-filter="all">All</button><button data-filter="Listing">Listings</button><button data-filter="Offer">Offers</button><button data-filter="Sale">Sales</button><button data-filter="Transfer">Transfers</button></div></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>Item</th><th>Actor</th><th>Counterparty</th><th>Value</th><th>Fee</th><th>Status</th><th></th></tr></thead><tbody id="marketTable"></tbody></table></div></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Market event stream</h3><p>One item can be traced through listing → offer → counter → accepted → settlement.</p></div><div class="segmented" id="marketFilter"><button class="active" data-filter="all">All</button><button data-filter="Listing">Listings</button><button data-filter="Offer">Offers</button><button data-filter="Sale">Sales</button><button data-filter="Transfer">Transfers</button></div></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>Item</th><th>Actor</th><th>Counterparty</th><th>Value</th><th>Platform fee</th><th>Status</th><th>Correlation</th><th></th></tr></thead><tbody id="marketTable"></tbody></table></div></div>
         </section>
 
         <section class="view" id="view-portfolios" data-title="Portfolios" data-eyebrow="ACTIVITY / PORTFOLIOS">
-          <div class="section-intro"><div><h2>User portfolios</h2><p>Per-user cash, USDC, stocks and physical inventory with ownership, basis and settlement state kept separate.</p></div><label class="search-box large"><span>⌕</span><input id="portfolioSearch" type="search" placeholder="Search user, wallet or account ID…" /></label></div>
+          <div class="section-intro"><div><h2>User portfolios</h2><p>Cash, USDC, Credits, stock positions and physical inventory — with cost basis, ownership and pending exposure.</p></div><label class="search-box large"><span>⌕</span><input id="portfolioSearch" placeholder="Search user, wallet, account…" /></label></div>
           <div class="metric-grid four" id="portfolioMetrics"></div>
-          <div class="panel"><div class="panel-header"><div><h3>Portfolio directory</h3><p>Click any account to inspect balances, positions, inventory and its ledger.</p></div></div><div class="portfolio-grid" id="portfolioGrid"></div></div>
-          <div class="panel exposure-panel"><div class="panel-header"><div><h3>Stock settlement model</h3><p>The operational distinction that keeps platform exposure measurable.</p></div></div><div class="flow-strip">
-            <div class="flow-step"><span>01</span><strong>User buys stock pack with cash</strong><p>Entry is recorded on the cash rail.</p></div><i>→</i>
-            <div class="flow-step"><span>02</span><strong>Stock outcome is revealed</strong><p>Stock is purchased and attributed to that user.</p></div><i>→</i>
-            <div class="flow-step"><span>03</span><strong>User holds the asset</strong><p>Market movement belongs to the user's position.</p></div><i>→</i>
-            <div class="flow-step"><span>04</span><strong>User sells</strong><p>Sale liquidates their holding; platform exposure is execution / chain cost.</p></div>
-          </div></div>
+          <div class="panel"><div class="panel-header"><div><h3>Portfolio directory</h3><p>Click an account to inspect balances, stock positions, vault inventory and ledger history.</p></div></div><div class="portfolio-grid" id="portfolioGrid"></div></div>
+          <div class="panel"><div class="panel-header"><div><h3>Stock settlement model</h3><p>Stock principal becomes user-owned; platform exposure is execution / chain cost.</p></div></div><div class="flow-strip"><div class="flow-step"><span>01</span><strong>Cash pack purchased</strong><p>Entry recorded as cash.</p></div><i>→</i><div class="flow-step"><span>02</span><strong>Stock purchased</strong><p>Order/fill and acquisition price tracked.</p></div><i>→</i><div class="flow-step"><span>03</span><strong>Position assigned</strong><p>Principal belongs to user.</p></div><i>→</i><div class="flow-step"><span>04</span><strong>User sells</strong><p>Sale proceeds become cash; platform tracks the execution cost and fee recovery.</p></div></div></div>
+        </section>
+
+        <section class="view" id="view-wallets" data-title="Wallet & Payments" data-eyebrow="ACTIVITY / WALLETS">
+          <div class="section-intro"><div><h2>Wallet & payments</h2><p>Deposits, withdrawals, whitelisted destinations, payment rails, balance movements and processor/network status.</p></div><div class="timestamp">Cash and USDC are never merged operationally</div></div>
+          <div class="metric-grid four" id="walletMetrics"></div>
+          <div class="two-col">
+            <div class="panel"><div class="panel-header"><div><h3>Balance movement by rail</h3><p>Gross movement over the demo window.</p></div></div><div id="walletBars" class="bar-list"></div></div>
+            <div class="panel"><div class="panel-header"><div><h3>Payment controls</h3><p>Operational safeguards that should be visible in Observe.</p></div></div><div class="control-list"><div><strong>Same-rail cashout</strong><span class="status success">Enforced</span></div><div><strong>Stock pack rail</strong><span class="status success">Cash only</span></div><div><strong>Withdrawal whitelist</strong><span class="status success">Required</span></div><div><strong>Cross-rail conversion</strong><span class="status info">Disabled</span></div></div></div>
+          </div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Wallet event ledger</h3><p>Every balance-changing event and its external/internal reference.</p></div><label class="search-box"><span>⌕</span><input id="walletSearch" placeholder="User, wallet, tx…" /></label></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>User</th><th>Rail</th><th>Chain / provider</th><th>Amount</th><th>Fee</th><th>Destination / ref</th><th>Status</th><th></th></tr></thead><tbody id="walletTable"></tbody></table></div></div>
         </section>
 
         <section class="view" id="view-fees" data-title="Fee Tracker" data-eyebrow="ACTIVITY / FEES">
-          <div class="section-intro"><div><h2>Fee tracker</h2><p>Every on-chain and execution cost, what caused it, whether it was recovered, and the net platform exposure.</p></div><div class="fee-live"><span class="health-dot"></span>Cost accounting live</div></div>
+          <div class="section-intro"><div><h2>Fee tracker</h2><p>Actual execution / network cost, user fee charged, recovered cost, subsidies and net platform exposure.</p></div><div class="fee-live"><span class="health-dot"></span>Cost accounting live</div></div>
           <div class="metric-grid four" id="feeMetrics"></div>
-          <div class="two-col fee-layout">
-            <div class="panel"><div class="panel-header"><div><h3>Fees by network</h3><p>Actual cost, not estimated headline gas.</p></div></div><div id="feeNetworkBars" class="bar-list"></div></div>
-            <div class="panel"><div class="panel-header"><div><h3>Recovery coverage</h3><p>Fees charged back through configured transaction pricing.</p></div></div><div class="coverage-card"><div class="coverage-ring" id="coverageRing"><span id="coveragePct">0%</span></div><div><strong id="coverageRecovered">$0 recovered</strong><p id="coverageExposure">$0 net platform exposure</p></div></div><div class="fee-note">Stock principal is intentionally excluded from platform exposure once the stock is assigned to the user's portfolio. We track the execution / network cost of selling, then compare it against the fee collected from the user.</div></div>
-          </div>
-          <div class="panel"><div class="panel-header wrap"><div><h3>On-chain & execution fee ledger</h3><p>Cost-level audit trail for each transaction.</p></div><label class="search-box"><span>⌕</span><input id="feeSearch" type="search" placeholder="Tx hash, user, action…" /></label></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>User</th><th>Network</th><th>Notional</th><th>Actual cost</th><th>Fee collected</th><th>Net exposure</th><th>Status</th><th></th></tr></thead><tbody id="feeTable"></tbody></table></div></div>
+          <div class="two-col fee-layout"><div class="panel"><div class="panel-header"><div><h3>Fees by network/provider</h3><p>Actual cost, not quoted or estimated cost.</p></div></div><div id="feeNetworkBars" class="bar-list"></div></div><div class="panel"><div class="panel-header"><div><h3>Recovery coverage</h3><p>How much direct transaction cost users are covering.</p></div></div><div class="coverage-card"><div class="coverage-ring" id="coverageRing"><span id="coveragePct">0%</span></div><div><strong id="coverageRecovered">$0 recovered</strong><p id="coverageExposure">$0 net platform exposure</p></div></div><div class="fee-note">Stock principal is excluded from company exposure after it is assigned to the user. A later sell should be measured as execution/network cost versus fee collected.</div></div></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Fee ledger</h3><p>Includes successful and failed transactions because failed on-chain actions can still cost money.</p></div><label class="search-box"><span>⌕</span><input id="feeSearch" placeholder="Tx hash, user, action…" /></label></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>User</th><th>Network</th><th>Notional</th><th>Actual cost</th><th>User fee</th><th>Recovered</th><th>Net exposure</th><th>Status</th><th></th></tr></thead><tbody id="feeTable"></tbody></table></div></div>
+        </section>
+
+        <section class="view" id="view-rewards" data-title="Rewards & Credits" data-eyebrow="ACTIVITY / REWARDS">
+          <div class="section-intro"><div><h2>Rewards & Credits</h2><p>Credits are non-cash platform units. Track spend, Credit Back, Crate Bonus, Lulu emissions, promotions, referral claims, task rewards and expiry events.</p></div><div class="timestamp">Credits ≠ treasury cash</div></div>
+          <div class="metric-grid four" id="rewardMetrics"></div>
+          <div class="two-col"><div class="panel"><div class="panel-header"><div><h3>Credits movement</h3><p>Inflows and burns by reason.</p></div></div><div id="rewardBars" class="bar-list"></div></div><div class="panel"><div class="panel-header"><div><h3>Reward systems</h3><p>User-facing systems that create operational events.</p></div></div><div class="control-list"><div><strong>Daily / weekly streak</strong><span>Activity + raffle qualification</span></div><div><strong>Referral ladder</strong><span>Activation, tier changes, claims</span></div><div><strong>Lulu burn</strong><span>Burn + Credits emission</span></div><div><strong>Earn tasks</strong><span>Submit → review → award/reject</span></div></div></div></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Rewards event ledger</h3><p>Credits, referrals, XP, streaks and raffle events.</p></div><label class="search-box"><span>⌕</span><input id="rewardSearch" placeholder="User, reward, ref…" /></label></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>User</th><th>Direction</th><th>Amount</th><th>Balance after</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody id="rewardTable"></tbody></table></div></div>
+        </section>
+
+        <section class="view" id="view-recon" data-title="Reconciliation" data-eyebrow="ACTIVITY / RECONCILIATION">
+          <div class="section-intro"><div><h2>Reconciliation & exceptions</h2><p>Compare internal state against wallets, custody, stock provider, marketplace, vault and Credits sources of truth.</p></div><button class="outline-button" id="runRecon">Run checks</button></div>
+          <div class="metric-grid four" id="reconMetrics"></div>
+          <div class="panel"><div class="panel-header wrap"><div><h3>Latest checks</h3><p>Mismatches, stuck transactions, stale quotes and orphaned events surface here.</p></div><label class="search-box"><span>⌕</span><input id="reconSearch" placeholder="Scope, reference, severity…" /></label></div><div class="table-wrap"><table><thead><tr><th>Checked</th><th>Scope</th><th>Internal</th><th>Observed</th><th>Difference</th><th>Severity</th><th>Result</th><th>Reference</th><th></th></tr></thead><tbody id="reconTable"></tbody></table></div></div>
+        </section>
+
+        <section class="view" id="view-catalog" data-title="Event Catalog" data-eyebrow="ACTIVITY / EVENT CATALOG">
+          <div class="section-intro"><div><h2>Tracked event catalog</h2><p>The canonical list of events Observe should accept. Operational events appear in the main ledger; low-value UI analytics can remain analytics-only.</p></div><div class="catalog-count" id="catalogCount"></div></div>
+          <div class="catalog-filters"><label class="search-box large"><span>⌕</span><input id="catalogSearch" placeholder="Search event names or descriptions…" /></label><select id="catalogDomain" class="select-control"><option value="all">All domains</option></select><select id="catalogLevel" class="select-control"><option value="all">All levels</option><option value="Operational">Operational</option><option value="Financial">Financial</option><option value="Analytics">Analytics</option></select></div>
+          <div class="catalog-grid" id="catalogGrid"></div>
         </section>
       </main>
     </div>
