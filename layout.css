@@ -1,0 +1,201 @@
+:root{
+  --topbar-compact:64px;
+  --space-1:6px;
+  --space-2:8px;
+  --space-3:12px;
+}
+
+/* Density pass: preserve information while removing empty vertical space. */
+html,body{height:100%}
+body{overflow-x:hidden}
+.app-shell{min-height:100vh}
+.sidebar{padding:18px 12px 12px;overflow-y:auto;overscroll-behavior:contain}
+.brand-row{padding:2px 12px 12px}
+.nav-parent{height:44px;border-radius:10px;padding:0 12px;font-size:14px}
+.subnav{margin-top:2px;gap:1px}
+.nav-item{min-height:34px;padding:0 11px;border-radius:8px;font-size:11px}
+.sidebar-footer{gap:8px;margin-top:10px}
+.system-health{padding:9px 10px}
+
+.topbar{height:var(--topbar-compact);padding:0 20px;gap:12px}
+.topbar-title h1{font-size:16px}
+.global-search-wrap{height:34px}
+.content{max-width:none;padding:14px 20px 22px}
+
+/* Keep the page identity visible while a data section scrolls below it. */
+.view.active>.section-intro{
+  position:sticky;
+  top:var(--topbar-compact);
+  z-index:14;
+  align-items:center;
+  margin:0 0 8px;
+  padding:9px 0 10px;
+  background:linear-gradient(180deg,rgba(9,13,16,.98) 0%,rgba(9,13,16,.95) 78%,rgba(9,13,16,.82) 100%);
+  backdrop-filter:blur(12px);
+}
+.section-intro{gap:12px}
+.section-intro h2{font-size:19px;margin-bottom:4px}
+.section-intro p{font-size:11.5px;line-height:1.42;max-width:900px}
+.timestamp,.catalog-count{font-size:10px}
+
+.metric-grid{gap:8px;margin-bottom:8px}
+.metric-card{min-height:86px;padding:11px 13px;border-radius:11px}
+.metric-label{font-size:9.5px;margin-bottom:7px}
+.metric-value{font-size:20px;margin-bottom:5px}
+.metric-sub{font-size:9px}
+
+.panel{margin-top:8px;border-radius:11px}
+.panel-header{padding:10px 12px;gap:10px}
+.panel-header h3{font-size:12px;margin-bottom:2px}
+.panel-header p{font-size:9.5px;line-height:1.35}
+.panel-tools{gap:6px}
+.search-box{height:31px;min-width:190px;padding:0 9px}
+.search-box.large{min-width:260px}
+.select-control{height:31px;font-size:10px}
+.quick-filters{padding:7px 12px;gap:5px}
+.filter-chip{height:24px;font-size:9px}
+
+/* Two-column panels should size to their own content rather than stretching to the taller neighbor. */
+.two-col{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start}
+.two-col>.panel{align-self:start;height:auto;min-height:0;margin-top:0}
+.two-col>.panel>.bar-list,
+.two-col>.panel>.control-list,
+.two-col>.panel>.policy-stack{height:auto;min-height:0}
+
+.policy-row{padding:10px 12px;gap:9px}
+.control-list>div{min-height:38px;padding:8px 12px;gap:10px}
+.control-list strong{font-size:10px}
+.control-list>div>span:not(.status){font-size:9px}
+.bar-list{padding:10px 12px 12px;gap:9px}
+.bar-row{grid-template-columns:116px minmax(80px,1fr) 76px;gap:9px}
+.coverage-card{padding:14px 16px;gap:14px}
+.coverage-ring{width:78px;height:78px}
+.coverage-ring::after{inset:9px}
+.fee-note{margin:0 12px 12px;padding:9px 10px}
+
+/* Every data-heavy section owns its scrolling. */
+.table-wrap{
+  width:100%;
+  max-height:clamp(280px,52vh,580px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+table{min-width:860px}
+thead th{
+  position:sticky;
+  top:0;
+  z-index:5;
+  height:32px;
+  padding:0 11px;
+  background:#0d1317;
+  box-shadow:0 1px 0 #202a33;
+}
+td{height:44px;padding:7px 11px}
+.cell-secondary{margin-top:2px}
+
+/* Tune scroll depth by page so the whole dashboard rarely needs a long document scroll. */
+#view-activity .table-wrap{max-height:clamp(360px,64vh,720px)}
+#view-purchases .table-wrap{max-height:clamp(290px,42vh,480px)}
+#view-reveals .table-wrap{max-height:clamp(360px,64vh,700px)}
+#view-market .table-wrap{max-height:clamp(360px,64vh,700px)}
+#view-wallets>.panel .table-wrap{max-height:clamp(270px,38vh,430px)}
+#coinflowPaymentsPanel .table-wrap{max-height:clamp(300px,43vh,500px)}
+#view-swaps .table-wrap{max-height:clamp(360px,60vh,680px)!important}
+#view-fees .table-wrap{max-height:clamp(340px,58vh,640px)}
+#view-rewards .table-wrap{max-height:clamp(340px,58vh,640px)}
+#view-recon .table-wrap{max-height:clamp(360px,64vh,700px)}
+
+/* Cards/grids become their own bounded information surfaces. */
+.portfolio-grid{
+  grid-template-columns:repeat(4,minmax(220px,1fr));
+  gap:8px;
+  padding:8px;
+  max-height:clamp(330px,54vh,620px);
+  overflow:auto;
+  align-content:start;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.portfolio-card{padding:11px}
+.user-row{margin-bottom:10px}
+.portfolio-mini-grid{gap:5px}
+.mini-balance{padding:7px}
+
+.catalog-filters{padding-bottom:8px;margin-bottom:0}
+.catalog-grid{
+  grid-template-columns:repeat(4,minmax(240px,1fr));
+  gap:8px;
+  max-height:calc(100vh - 210px);
+  overflow:auto;
+  align-content:start;
+  padding-right:4px;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.catalog-card{min-height:116px;padding:11px}
+.catalog-card-head{margin-bottom:7px}
+.catalog-card p{margin-bottom:8px;line-height:1.4}
+
+/* Flow strips carry dense process information without dominating the page. */
+.flow-strip{padding:10px;gap:4px}
+.flow-step{padding:9px}
+.flow-step strong{margin:5px 0 3px}
+.flow-step p{line-height:1.35}
+
+/* Coinflow/payment page: keep the short summary panels short; no matched-height whitespace. */
+#view-wallets>.two-col,
+#coinflowPaymentsPanel .two-col{align-items:start}
+#coinflowPaymentsPanel .two-col{padding:0 12px 12px!important;gap:8px}
+#coinflowPaymentsPanel .two-col>.panel{height:auto!important;min-height:0!important}
+#coinflowPaymentsPanel .metric-grid{padding:0 12px 12px!important}
+#coinflowPaymentsPanel .control-list>div{min-height:36px;padding:7px 10px}
+
+/* For Sam is long by design, so it gets one contained handoff scroll surface with sticky page-group headers. */
+#samChecklist{
+  max-height:calc(100vh - 300px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+#samChecklist>div>.panel-header{position:sticky;top:0;z-index:6}
+#samChecklist .table-wrap{max-height:none;overflow:visible}
+#view-sam>.panel{margin-top:8px}
+
+/* Drawer is also a contained scroll context; keep its title fixed. */
+.drawer-head{height:64px;position:sticky;top:0;z-index:3;background:#0d1318}
+.drawer-body{padding:12px 14px 20px;overscroll-behavior:contain}
+.drawer-section{margin-bottom:8px}
+
+/* Subtle, low-stimulation scrollbars. */
+.table-wrap,.portfolio-grid,.catalog-grid,#samChecklist,.sidebar,.drawer-body{
+  scrollbar-width:thin;
+  scrollbar-color:#2a3741 transparent;
+}
+.table-wrap::-webkit-scrollbar,.portfolio-grid::-webkit-scrollbar,.catalog-grid::-webkit-scrollbar,#samChecklist::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.drawer-body::-webkit-scrollbar{width:7px;height:7px}
+.table-wrap::-webkit-scrollbar-thumb,.portfolio-grid::-webkit-scrollbar-thumb,.catalog-grid::-webkit-scrollbar-thumb,#samChecklist::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.drawer-body::-webkit-scrollbar-thumb{background:#293640;border-radius:999px}
+.table-wrap::-webkit-scrollbar-track,.portfolio-grid::-webkit-scrollbar-track,.catalog-grid::-webkit-scrollbar-track,#samChecklist::-webkit-scrollbar-track,.sidebar::-webkit-scrollbar-track,.drawer-body::-webkit-scrollbar-track{background:transparent}
+
+@media(max-width:1350px){
+  .portfolio-grid,.catalog-grid{grid-template-columns:repeat(3,minmax(220px,1fr))}
+}
+@media(max-width:1180px){
+  .portfolio-grid,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .content{padding:12px 16px 18px}
+}
+@media(max-width:860px){
+  :root{--topbar-compact:60px}
+  .topbar{height:60px}
+  .view.active>.section-intro{position:relative;top:auto;padding-top:4px;background:transparent;backdrop-filter:none}
+  .two-col{grid-template-columns:1fr}
+  .table-wrap,#view-activity .table-wrap,#view-purchases .table-wrap,#view-reveals .table-wrap,#view-market .table-wrap,#view-wallets>.panel .table-wrap,#coinflowPaymentsPanel .table-wrap,#view-swaps .table-wrap,#view-fees .table-wrap,#view-rewards .table-wrap,#view-recon .table-wrap{max-height:58vh!important}
+  .catalog-grid,.portfolio-grid,#samChecklist{max-height:62vh}
+}
+@media(max-width:620px){
+  .content{padding:10px 10px 16px}
+  .metric-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-card{min-height:78px;padding:9px 10px}
+  .metric-value{font-size:18px}
+  .portfolio-grid,.catalog-grid{grid-template-columns:1fr}
+  .panel-header{align-items:flex-start}
+}
