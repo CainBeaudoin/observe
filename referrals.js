@@ -46,30 +46,31 @@
   const style = document.createElement('style');
   style.textContent = `
     #view-referrals .referral-callout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:8px}
-    #view-referrals .referral-rule{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+    #view-referrals .referral-rule{padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
     #view-referrals .referral-rule strong{display:block;font-size:13px;margin-bottom:4px}
     #view-referrals .referral-rule p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
-    #view-referrals .formula-box{display:flex;align-items:center;justify-content:center;min-height:100%;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);text-align:center}
+    #view-referrals .formula-box{display:flex;align-items:center;justify-content:center;min-height:100%;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--panel);text-align:center}
     #view-referrals .formula-main{font-size:15px;font-weight:700;line-height:1.5}
     #view-referrals .formula-sub{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:4px}
-    #view-referrals .referral-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-    #view-referrals .referral-step{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+    #view-referrals .referral-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px}
+    #view-referrals .referral-step{padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
     #view-referrals .referral-step span{display:block;color:var(--muted);font-size:10px;margin-bottom:6px}
     #view-referrals .referral-step strong{display:block;font-size:12px;margin-bottom:4px}
     #view-referrals .referral-step p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
-    #view-referrals .working-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+    #view-referrals .working-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
     #view-referrals .referral-two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start}
-    #view-referrals .scenario-grid{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:8px}
+    #view-referrals .scenario-grid{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:8px;padding:12px 12px 0}
     #view-referrals .scenario-field{display:flex;flex-direction:column;gap:5px}
     #view-referrals .scenario-field span{font-size:10px;color:var(--muted);font-weight:600}
-    #view-referrals .scenario-field input{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--text);padding:0 9px;font:inherit}
-    #view-referrals .scenario-results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
-    #view-referrals .scenario-result{padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel-soft)}
+    #view-referrals .scenario-field input{width:100%;height:34px;border:1px solid var(--border2);border-radius:8px;background:#0d1318;color:var(--text);padding:0 9px;font:inherit;outline:none}
+    #view-referrals .scenario-field input:focus{border-color:#3a4a56}
+    #view-referrals .scenario-results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;padding:0 12px}
+    #view-referrals .scenario-result{padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--panel2)}
     #view-referrals .scenario-result span{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}
     #view-referrals .scenario-result strong{font-size:14px}
-    #view-referrals .referral-note{margin-top:9px;padding:9px 10px;border-left:2px solid var(--muted);background:var(--panel-soft);font-size:11px;color:var(--muted);line-height:1.5}
-    #view-referrals .adapt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    #view-referrals .adapt-item{padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft)}
+    #view-referrals .referral-note{margin:9px 12px 12px;padding:9px 10px;border-left:2px solid var(--muted);background:var(--panel2);font-size:11px;color:var(--muted);line-height:1.5}
+    #view-referrals .adapt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}
+    #view-referrals .adapt-item{padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
     #view-referrals .adapt-item strong{display:block;font-size:11px;margin-bottom:4px}
     #view-referrals .adapt-item span{font-size:10px;color:var(--muted);line-height:1.4;display:block}
     #view-referrals table{font-size:11px}
@@ -96,7 +97,6 @@
     const totalCashout = sum(rows,'cashoutVolume30d');
     const totalPending = sum(rows,'pending');
     const totalClaimable = sum(rows,'claimable');
-    const finalized = logs.filter(x=>['Claimable','Paid'].includes(x.status)).reduce((a,x)=>a+Math.max(0,x.earning),0);
 
     view.innerHTML = `
       <div class="section-intro">
