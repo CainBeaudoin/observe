@@ -17,17 +17,17 @@
     'Pity counter updated','Fairness nonce disclosed','Fairness proof recomputed','Unselected outcomes disclosed'
   ], description:'Keep the before/after pity counters and the complete commit-reveal audit chain. Store commitment, disclosed nonce/seed material only when safe to reveal, recomputed hash/result, selected index and the locked unselected outcomes under the same correlation ID.' });
 
-  reg({ domain:'Referral Attribution & Claims', page:'Rewards & Credits', level:'Financial', names:[
-    'Referral code detected','Referral attribution recorded','Referral attribution rejected','Referred user first qualifying open','Referral Cash claim liability resolved','Referral Credits claim base resolved','Referral Credits bonus issued','Referral claim failed'
-  ], description:'Track the referrer code/source, referred user, attribution timestamp, first qualifying activity, accrued liability and claim method. Separate the base referral liability from any extra Credits bonus so Treasury and Credits issuance remain auditable.' });
+  reg({ domain:'Referral Attribution & Qualification', page:'Referrals', level:'Financial', names:[
+    'Referral code detected','Referral attribution recorded','Referral attribution rejected','Referred user first qualifying open','Referral activated','Referral tier changed','Referral rate version changed'
+  ], description:'Track referrer, referred user, referral source/code, attribution time, first qualifying paid open, active-referral count, tier, rate and the version of the referral rules that produced the rate.' });
 
-  reg({ domain:'Referral Profit Share', page:'Rewards & Credits / Portfolios', level:'Financial', names:[
-    'Referred opening recorded','Referred opening gross volume updated','Referred opening direct costs calculated','Referred opening contribution margin calculated','Referral profit-share rate snapshotted','Referral profit-share accrued','Referral profit-share held pending finality','Referral profit-share finalized','Referral profit-share not earned','Referral profit-share adjusted','Referral profit-share clawback created','Referral profit-share clawback resolved','Referral claim requested','Referral claim paid'
-  ], description:'Recommended economics: reward the referrer from positive contribution margin, not from gross opening spend. For each referred open calculate eligible_margin = max(0, recognized entry revenue - prize/stock acquisition obligation or reserve - processor/bridge/network/execution costs - direct fulfillment/subsidy costs - attributable refunds or chargebacks). Then referral_earning = eligible_margin × the referral rate snapshotted for that open. Store referrer, referred user, purchase/reveal IDs, entry amount/rail, every direct-cost leg, eligible margin, rate + rate-version, earning, pending/finalized state and correlation ID. Pure Credits-funded opens should default to no cash profit-share unless an explicit campaign says otherwise. Hold earnings pending payment/outcome finality and support adjustments/clawbacks so a later refund or chargeback cannot leave Chosen paying commission on profit it never kept.' });
+  reg({ domain:'Referral Cashout Share', page:'Referrals', level:'Financial', names:[
+    'Referred opening recorded','Referral rate snapshotted','Referred cashout detected','Referral cashout eligibility calculated','Referral cashout share accrued','Referral cashout share held pending finality','Referral cashout share finalized','Referral cashout share not earned','Referral cashout share adjusted','Referral cashout share clawback created','Referral cashout share clawback resolved','Referral claim requested','Referral claim paid','Referral claim failed'
+  ], description:'Recommended working model: the referrer earns only when the referred user realizes an eligible cashout. referral_earning = actual cashout credited × the referral rate snapshotted for that opening. Entry spend and displayed prize FMV are context, not the commission basis. If the user keeps the item there is no referral cash earning yet; if that item is later bought out by Chosen, calculate on the actual amount paid then. Hold earnings until payment/cashout finality and support reversals, adjustments and clawbacks for refunds, fraud or chargebacks. Eligibility by product, funding rail, cashout type and campaign should be configurable.' });
 
-  reg({ domain:'Referral Treasury Liability', page:'Reconciliation', level:'Financial', names:[
+  reg({ domain:'Referral Treasury Liability', page:'Referrals / Reconciliation', level:'Financial', names:[
     'Referral commission liability created','Referral commission liability finalized','Referral commission liability released','Referral commission payout recorded','Referral commission clawback recorded'
-  ], description:'Referral earnings are a platform liability once earned. Keep pending, claimable and paid balances separate; reconcile them to the per-opening profit-share ledger and never expense commission from gross marketplace or user principal.' });
+  ], description:'Keep pending, claimable, paid and clawed-back referral balances separate. Reconcile every commission liability to the exact referred opening and realized cashout that created it.' });
 
   reg({ domain:'Stock Lot & Transfer Lifecycle', page:'Portfolios', level:'Financial', names:[
     'Stock lot partially depleted','Stock cost basis allocated to sale','Position basis recalculated','Stock transfer recipient validation requested','Stock transfer recipient validated','Stock transfer recipient validation failed','Stock transfer requested','Stock transfer submitted','Stock transfer completed','Stock transfer failed','Internal stock transfer completed'
@@ -53,15 +53,15 @@
     'Username change requested','Username change rejected'
   ], description:'In addition to the successful Username changed event, retain request/rejection reason and actor. Never log secrets or unnecessary PII.' });
 
-  // Referral performance belongs on the user/profile record as well as Rewards.
-  // Numbers below are deterministic demo data; the fields are the important part.
+  // Demo referral profile metrics. These are illustrative numbers, not a final program.
+  // The page uses realized cashout volume as the commission basis, never gross spend.
   const referralProfiles = {
-    usr_01HZX2:{ referredUsers:23, activeReferrals:18, opens30d:146, volume30d:18250, eligibleMargin30d:4120, shareRate:.15, pending:84.30, claimable:533.70, lifetimePaid:928.50 },
-    usr_01HZX9:{ referredUsers:12, activeReferrals:9,  opens30d:67,  volume30d:8900,  eligibleMargin30d:1720, shareRate:.12, pending:42.00, claimable:164.40, lifetimePaid:380.00 },
-    usr_01HZYA:{ referredUsers:6,  activeReferrals:4,  opens30d:22,  volume30d:2250,  eligibleMargin30d:480,  shareRate:.10, pending:12.00, claimable:36.00,  lifetimePaid:74.00 },
-    usr_01HZYQ:{ referredUsers:38, activeReferrals:31, opens30d:241, volume30d:31100, eligibleMargin30d:6980, shareRate:.18, pending:125.64,claimable:910.80, lifetimePaid:1844.00 },
-    usr_01HZZ4:{ referredUsers:3,  activeReferrals:2,  opens30d:9,   volume30d:825,   eligibleMargin30d:130,  shareRate:.10, pending:0,     claimable:13.00,  lifetimePaid:20.00 },
-    usr_01J001:{ referredUsers:17, activeReferrals:14, opens30d:98,  volume30d:12750, eligibleMargin30d:2600, shareRate:.15, pending:48.75, claimable:341.25, lifetimePaid:611.00 }
+    usr_01HZX2:{ referredUsers:23, activeReferrals:18, opens30d:146, referredVolume30d:18250, cashoutVolume30d:12140, shareRate:.0125, pending:38.20, claimable:151.75, lifetimePaid:492.40 },
+    usr_01HZX9:{ referredUsers:12, activeReferrals:9,  opens30d:67,  referredVolume30d:8900,  cashoutVolume30d:5960,  shareRate:.01,   pending:16.40, claimable:59.60,  lifetimePaid:184.10 },
+    usr_01HZYA:{ referredUsers:6,  activeReferrals:4,  opens30d:22,  referredVolume30d:2250,  cashoutVolume30d:1320,  shareRate:.01,   pending:4.80,  claimable:13.20,  lifetimePaid:39.20 },
+    usr_01HZYQ:{ referredUsers:38, activeReferrals:31, opens30d:241, referredVolume30d:31100, cashoutVolume30d:21850, shareRate:.015,  pending:72.30, claimable:327.75, lifetimePaid:934.60 },
+    usr_01HZZ4:{ referredUsers:3,  activeReferrals:2,  opens30d:9,   referredVolume30d:825,   cashoutVolume30d:510,   shareRate:.01,   pending:0,     claimable:5.10,   lifetimePaid:12.50 },
+    usr_01J001:{ referredUsers:17, activeReferrals:14, opens30d:98,  referredVolume30d:12750, cashoutVolume30d:8740,  shareRate:.0125, pending:27.65, claimable:109.25, lifetimePaid:311.80 }
   };
   window.observeReferralProfiles = referralProfiles;
 
@@ -74,10 +74,11 @@
     {id:'evt_audit_06',mins:81,type:'Market product match rejected',category:'Reconciliation',user:'usr_01HZX2',asset:'StockX/KicksDB lookup · AJ1 UNC Patent',ref:'mdmatch_044',corr:'corr_price_044',amount:0,rail:'Internal',status:'Review',fee:0,note:'Search result failed confidence threshold; simulated/fallback FMV remained active.'},
     {id:'evt_audit_07',mins:96,type:'Live Activity push delivered',category:'System',user:'usr_01HZX9',asset:'Pack result · item won',ref:'lapush_702',corr:'corr_crate_72118',amount:0,rail:'Internal',status:'Confirmed',fee:0,note:'Remote APNs Live Activity update delivered after authoritative result.'},
     {id:'evt_audit_08',mins:119,type:'Stock transfer recipient validation failed',category:'Stocks',user:'usr_01HZZ4',asset:'AAPL · destination 0x91…bad',ref:'stkxfr_290',corr:'corr_stkxfr_290',amount:0,rail:'On-chain',status:'Failed',fee:0,note:'Transfer stopped before custody submission because the recipient was invalid.'},
-    {id:'evt_refprofit_01',mins:15,type:'Referred opening contribution margin calculated',category:'Rewards',user:'usr_01HZX2',counterparty:'usr_01HZYA',asset:'Bronze open · $100 entry · $32.00 eligible margin',ref:'refopen_301',corr:'corr_refopen_301',amount:32,rail:'Cash',status:'Confirmed',fee:0,note:'Contribution margin was calculated after the outcome obligation and direct payment/platform costs; gross $100 spend is not the referral basis.'},
-    {id:'evt_refprofit_02',mins:14,type:'Referral profit-share accrued',category:'Rewards',user:'usr_01HZX2',counterparty:'usr_01HZYA',asset:'15% × $32.00 eligible margin',ref:'refearn_301',corr:'corr_refopen_301',amount:4.80,rail:'Cash',status:'Pending',fee:0,note:'Referral rate was snapshotted for this opening. Earning stays pending until payment/outcome finality.'},
-    {id:'evt_refprofit_03',mins:58,type:'Referral profit-share finalized',category:'Rewards',user:'usr_01HZYQ',counterparty:'usr_01HZX9',asset:'18% profit share · referred Gold open',ref:'refearn_288',corr:'corr_refopen_288',amount:21.42,rail:'Cash',status:'Confirmed',fee:0,note:'Positive referred-open contribution margin finalized and became claimable referral liability.'},
-    {id:'evt_refprofit_04',mins:173,type:'Referral profit-share clawback created',category:'Rewards',user:'usr_01J001',counterparty:'usr_01HZZ4',asset:'Referred card open later charged back',ref:'refclaw_044',corr:'corr_refopen_044',amount:-6.30,rail:'Cash',status:'Review',fee:0,note:'A downstream chargeback removed profit from the referred open, so the related commission was reversed before/against payout.'}
+    {id:'evt_refcash_01',mins:15,type:'Referred cashout detected',category:'Rewards',user:'usr_01HZX2',counterparty:'usr_01HZYA',asset:'$50 crate · $30 actual cashout credited',ref:'refcash_301',corr:'corr_refopen_301',amount:30,rail:'Cash',status:'Confirmed',fee:0,note:'Referral basis is the actual $30 cashout, not the $50 entry or displayed prize value.'},
+    {id:'evt_refcash_02',mins:14,type:'Referral cashout share accrued',category:'Rewards',user:'usr_01HZX2',counterparty:'usr_01HZYA',asset:'1.25% × $30 cashout',ref:'refearn_301',corr:'corr_refopen_301',amount:.375,rail:'Cash',status:'Pending',fee:0,note:'The opening snapshotted Maya’s 1.25% referral tier. Commission remains pending until finality.'},
+    {id:'evt_refcash_03',mins:58,type:'Referral cashout share finalized',category:'Rewards',user:'usr_01HZYQ',counterparty:'usr_01HZX9',asset:'$1,000 FMV win · $800 cashout · 1.5% share',ref:'refearn_288',corr:'corr_refopen_288',amount:12,rail:'Cash',status:'Confirmed',fee:0,note:'The referred user realized an $800 cashout, creating a $12 finalized referral earning.'},
+    {id:'evt_refcash_04',mins:173,type:'Referral cashout share clawback created',category:'Rewards',user:'usr_01J001',counterparty:'usr_01HZZ4',asset:'Referred card-funded cashout later charged back',ref:'refclaw_044',corr:'corr_refopen_044',amount:-6.30,rail:'Cash',status:'Review',fee:0,note:'A downstream chargeback invalidated the original cashout economics, so the related referral commission was reversed.'},
+    {id:'evt_refcash_05',mins:205,type:'Referral cashout share not earned',category:'Rewards',user:'usr_01HZX9',counterparty:'usr_01HZYA',asset:'Referred user kept item in vault',ref:'refkeep_051',corr:'corr_refopen_051',amount:0,rail:'Internal',status:'Confirmed',fee:0,note:'No realized cashout means no cash referral earning yet. A later platform buyout can create the commission then.'}
   ];
 
   sample.forEach(e => {
@@ -90,8 +91,7 @@
     if (categorySelect && ![...categorySelect.options].some(o => o.value === c)) categorySelect.add(new Option(c,c));
   });
 
-  // Add referral performance to the compact portfolio cards without turning
-  // the directory into a separate rewards dashboard.
+  // Keep referral performance visible in the user/profile area too.
   const priorPortfolioRender = renderers.portfolios;
   renderers.portfolios = function () {
     priorPortfolioRender();
@@ -101,14 +101,11 @@
       const meta = card.querySelector('.user-meta span');
       if (meta && !meta.dataset.referralMetric) {
         meta.dataset.referralMetric = '1';
-        meta.textContent += ` · ${p.activeReferrals} active refs · ${Math.round(p.shareRate*100)}% share`;
+        meta.textContent += ` · ${p.activeReferrals} active refs · ${(p.shareRate*100).toFixed(2).replace(/\.00$/,'')}% cashout share`;
       }
     });
   };
 
-  // The detailed user drawer is the profile-side source of truth for referral
-  // performance. Keep gross referred volume separate from eligible margin and
-  // from the actual commission liability.
   const priorOpenDrawer = openDrawer;
   openDrawer = function (type, id) {
     priorOpenDrawer(type, id);
@@ -122,31 +119,20 @@
     section.innerHTML = `
       <div class="drawer-section-title">Referral performance</div>
       <div class="detail-grid">
-        ${kv('Current profit share',`${Math.round(p.shareRate*100)}%`)}
+        ${kv('Current cashout share',`${(p.shareRate*100).toFixed(2).replace(/\.00$/,'')}%`)}
         ${kv('Referred users',num(p.referredUsers))}
         ${kv('Active referrals',num(p.activeReferrals))}
         ${kv('Referred opens · 30d',num(p.opens30d))}
-        ${kv('Referred volume · 30d',money(p.volume30d))}
-        ${kv('Eligible margin · 30d',money(p.eligibleMargin30d))}
+        ${kv('Referred entry volume · 30d',money(p.referredVolume30d))}
+        ${kv('Realized cashout volume · 30d',money(p.cashoutVolume30d))}
         ${kv('Pending earnings',money(p.pending))}
         ${kv('Claimable earnings',money(p.claimable))}
         ${kv('Lifetime paid',money(p.lifetimePaid))}
       </div>
-      <div class="detail-note"><strong>Recommended basis:</strong> referral earnings should be a configurable percentage of positive contribution margin from each referred opening, not a percentage of gross spend. Snapshot the rate per open, keep earnings pending until the underlying payment/outcome is final, and claw back/adjust if that open is later refunded or charged back.</div>`;
-    const unifiedTitle = [...body.querySelectorAll('.drawer-section-title')].find(x => /Unified user tracking/i.test(x.textContent));
-    const anchor = unifiedTitle?.closest('.drawer-section');
-    if (anchor) body.insertBefore(section, anchor); else body.appendChild(section);
+      <div class="detail-note"><strong>Working model:</strong> the user’s tier percentage applies to the referred user’s actual eligible cashout. Gross crate spend and displayed win FMV do not directly create commission. If the friend keeps the item, the referrer earns $0 at that moment; a later Chosen buyout can create the earning when money is actually paid.</div>`;
+    body.insertBefore(section, body.children[2] || null);
   };
 
-  // The original search listener can render cards through the base renderer;
-  // schedule our wrapper afterward so referral/card annotations stay present.
-  const portfolioSearch = document.getElementById('portfolioSearch');
-  if (portfolioSearch && !portfolioSearch.dataset.referralRefresh) {
-    portfolioSearch.dataset.referralRefresh = '1';
-    portfolioSearch.addEventListener('input', () => setTimeout(() => renderers.portfolios(), 0));
-  }
-
   if (document.getElementById('view-activity')?.classList.contains('active')) renderActivity();
-  if (document.getElementById('view-portfolios')?.classList.contains('active')) renderers.portfolios();
   if (document.getElementById('view-sam')?.classList.contains('active') && renderers.sam) renderers.sam();
 })();
