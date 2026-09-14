@@ -130,7 +130,7 @@
         </section>
 
         <section class="view" id="view-recon" data-title="Reconciliation" data-eyebrow="ACTIVITY / RECONCILIATION">
-          <div class="section-intro"><div><h2>Reconciliation & exceptions</h2><p>Compare internal state against wallets, custody, stock provider, marketplace, vault and Credits sources of truth.</p></div><button class="outline-button" id="runRecon">Run checks</button></div>
+          <div class="section-intro"><div><h2>Reconciliation & exceptions</h2><p>Compare internal state against wallets, custody/provider, vault, marketplace, Credits and reveal sources of truth.</p></div><button class="outline-button" id="runRecon">Run checks</button></div>
           <div class="metric-grid four" id="reconMetrics"></div>
           <div class="panel"><div class="panel-header wrap"><div><h3>Latest checks</h3><p>Mismatches, stuck transactions, stale quotes and orphaned events surface here.</p></div><label class="search-box"><span>⌕</span><input id="reconSearch" placeholder="Scope, reference, severity…" /></label></div><div class="table-wrap"><table><thead><tr><th>Checked</th><th>Scope</th><th>Internal</th><th>Observed</th><th>Difference</th><th>Severity</th><th>Result</th><th>Reference</th><th></th></tr></thead><tbody id="reconTable"></tbody></table></div></div>
         </section>
@@ -155,5 +155,6 @@
   <script src="./enhancements.js"></script>
   <script src="./for-sam.js"></script>
   <script src="./refinement.js"></script>
+  <script src="./coinflow.js"></script>
 </body>
 </html>
