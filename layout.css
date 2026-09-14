@@ -3,6 +3,7 @@
   --space-1:6px;
   --space-2:8px;
   --space-3:12px;
+  --page-gap:8px;
 }
 
 /* Density pass: preserve information while removing empty vertical space. */
@@ -22,14 +23,27 @@ body{overflow-x:hidden}
 .global-search-wrap{height:34px}
 .content{max-width:none;padding:14px 20px 22px}
 
+/* Every page now follows one vertical rhythm. Direct page sections are grid rows with exactly the same gap. */
+.view.active{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:var(--page-gap);
+  align-content:start;
+}
+.view.active>*{
+  min-width:0;
+  margin-top:0!important;
+  margin-bottom:0!important;
+}
+
 /* Keep the page identity visible while a data section scrolls below it. */
 .view.active>.section-intro{
   position:sticky;
   top:var(--topbar-compact);
   z-index:14;
   align-items:center;
-  margin:0 0 8px;
-  padding:9px 0 10px;
+  margin:0!important;
+  padding:6px 0;
   background:linear-gradient(180deg,rgba(9,13,16,.98) 0%,rgba(9,13,16,.95) 78%,rgba(9,13,16,.82) 100%);
   backdrop-filter:blur(12px);
 }
@@ -38,13 +52,13 @@ body{overflow-x:hidden}
 .section-intro p{font-size:11.5px;line-height:1.42;max-width:900px}
 .timestamp,.catalog-count{font-size:10px}
 
-.metric-grid{gap:8px;margin-bottom:8px}
+.metric-grid{gap:var(--page-gap);margin:0!important}
 .metric-card{min-height:86px;padding:11px 13px;border-radius:11px}
 .metric-label{font-size:9.5px;margin-bottom:7px}
 .metric-value{font-size:20px;margin-bottom:5px}
 .metric-sub{font-size:9px}
 
-.panel{margin-top:8px;border-radius:11px}
+.panel{margin:0!important;border-radius:11px}
 .panel-header{padding:10px 12px;gap:10px}
 .panel-header h3{font-size:12px;margin-bottom:2px}
 .panel-header p{font-size:9.5px;line-height:1.35}
@@ -56,8 +70,8 @@ body{overflow-x:hidden}
 .filter-chip{height:24px;font-size:9px}
 
 /* Two-column panels should size to their own content rather than stretching to the taller neighbor. */
-.two-col{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start}
-.two-col>.panel{align-self:start;height:auto;min-height:0;margin-top:0}
+.two-col{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--page-gap);align-items:start;margin:0!important}
+.two-col>.panel{align-self:start;height:auto;min-height:0;margin:0!important}
 .two-col>.panel>.bar-list,
 .two-col>.panel>.control-list,
 .two-col>.panel>.policy-stack{height:auto;min-height:0}
@@ -71,7 +85,7 @@ body{overflow-x:hidden}
 .coverage-card{padding:14px 16px;gap:14px}
 .coverage-ring{width:78px;height:78px}
 .coverage-ring::after{inset:9px}
-.fee-note{margin:0 12px 12px;padding:9px 10px}
+.fee-note{margin:0!important;padding:9px 10px}
 
 /* Every data-heavy section owns its scrolling. */
 .table-wrap{
@@ -109,7 +123,7 @@ td{height:44px;padding:7px 11px}
 /* Cards/grids become their own bounded information surfaces. */
 .portfolio-grid{
   grid-template-columns:repeat(4,minmax(220px,1fr));
-  gap:8px;
+  gap:var(--page-gap);
   padding:8px;
   max-height:clamp(330px,54vh,620px);
   overflow:auto;
@@ -122,10 +136,10 @@ td{height:44px;padding:7px 11px}
 .portfolio-mini-grid{gap:5px}
 .mini-balance{padding:7px}
 
-.catalog-filters{padding-bottom:8px;margin-bottom:0}
+.catalog-filters{padding-bottom:0;margin:0!important}
 .catalog-grid{
   grid-template-columns:repeat(4,minmax(240px,1fr));
-  gap:8px;
+  gap:var(--page-gap);
   max-height:calc(100vh - 210px);
   overflow:auto;
   align-content:start;
@@ -143,15 +157,24 @@ td{height:44px;padding:7px 11px}
 .flow-step strong{margin:5px 0 3px}
 .flow-step p{line-height:1.35}
 
-/* Coinflow/payment page: keep the short summary panels short; no matched-height whitespace. */
+/* Wallet/Payments visual order: summary -> controls -> Coinflow -> balance ledger. */
+#view-wallets>.section-intro{order:0}
+#view-wallets>#walletMetrics{order:1}
+#view-wallets>.two-col{order:2}
+#coinflowPaymentsPanel{order:3}
+#view-wallets>.panel:not(#coinflowPaymentsPanel){order:4}
+
+/* Coinflow/payment page: use the same 8px internal rhythm, with no matched-height whitespace. */
 #view-wallets>.two-col,
 #coinflowPaymentsPanel .two-col{align-items:start}
-#coinflowPaymentsPanel .two-col{padding:0 12px 12px!important;gap:8px}
-#coinflowPaymentsPanel .two-col>.panel{height:auto!important;min-height:0!important}
-#coinflowPaymentsPanel .metric-grid{padding:0 12px 12px!important}
+#coinflowPaymentsPanel{display:block}
+#coinflowPaymentsPanel>.metric-grid{padding:var(--page-gap) 12px 0!important;margin:0!important}
+#coinflowPaymentsPanel>.two-col{padding:var(--page-gap) 12px var(--page-gap)!important;gap:var(--page-gap)}
+#coinflowPaymentsPanel .two-col>.panel{height:auto!important;min-height:0!important;margin:0!important}
 #coinflowPaymentsPanel .control-list>div{min-height:36px;padding:7px 10px}
 
 /* For Sam is long by design, so it gets one contained handoff scroll surface with sticky page-group headers. */
+#samCoreNote{margin:0!important}
 #samChecklist{
   max-height:calc(100vh - 300px);
   overflow:auto;
@@ -160,7 +183,7 @@ td{height:44px;padding:7px 11px}
 }
 #samChecklist>div>.panel-header{position:sticky;top:0;z-index:6}
 #samChecklist .table-wrap{max-height:none;overflow:visible}
-#view-sam>.panel{margin-top:8px}
+#view-sam>.panel{margin:0!important}
 
 /* Drawer is also a contained scroll context; keep its title fixed. */
 .drawer-head{height:64px;position:sticky;top:0;z-index:3;background:#0d1318}
@@ -184,14 +207,15 @@ td{height:44px;padding:7px 11px}
   .content{padding:12px 16px 18px}
 }
 @media(max-width:860px){
-  :root{--topbar-compact:60px}
+  :root{--topbar-compact:60px;--page-gap:7px}
   .topbar{height:60px}
-  .view.active>.section-intro{position:relative;top:auto;padding-top:4px;background:transparent;backdrop-filter:none}
+  .view.active>.section-intro{position:relative;top:auto;padding:4px 0;background:transparent;backdrop-filter:none}
   .two-col{grid-template-columns:1fr}
   .table-wrap,#view-activity .table-wrap,#view-purchases .table-wrap,#view-reveals .table-wrap,#view-market .table-wrap,#view-wallets>.panel .table-wrap,#coinflowPaymentsPanel .table-wrap,#view-swaps .table-wrap,#view-fees .table-wrap,#view-rewards .table-wrap,#view-recon .table-wrap{max-height:58vh!important}
   .catalog-grid,.portfolio-grid,#samChecklist{max-height:62vh}
 }
 @media(max-width:620px){
+  :root{--page-gap:6px}
   .content{padding:10px 10px 16px}
   .metric-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}
   .metric-card{min-height:78px;padding:9px 10px}
