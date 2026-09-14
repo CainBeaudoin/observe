@@ -12,10 +12,34 @@ The current repository is a dependency-free static prototype with realistic demo
 - **Secondary Market** — offer-only inventory, listings, repricing, offers, counters, sales, ownership transfer and marketplace fees.
 - **Portfolios** — per-user Cash, USDC, Credits, stock positions, stock basis/P&L, physical inventory and pending vault exposure.
 - **Wallet & Payments** — deposits, withdrawals, whitelists, processor/network state and balance movement.
+- **Swaps / Bridge** — multi-chain USDC deposits, source transactions, bridge routing, Robinhood Chain settlement and Chosen-paid gas/route costs.
 - **Fee Tracker** — actual network/execution cost, configured user fee, recovered cost, subsidy and net platform exposure.
 - **Rewards & Credits** — Credit Spend, Credit Back, Crate Bonus, Lulu, promotions, XP, streaks, raffles, referral claims and earn tasks.
 - **Reconciliation** — internal state versus wallets, custody/provider, vault, marketplace, Credits and reveal sources of truth.
 - **Event Catalog** — canonical registry of all operational, financial and analytics events the platform should emit.
+- **For Sam** — implementation handoff showing every transaction/event type across all pages, grouped by where it belongs and what the refined backend should capture.
+
+## For Sam auto-update behavior
+
+`For Sam` is intentionally generated instead of hardcoded. Each time the page renders it combines:
+
+1. the canonical `eventCatalog` defined by Observe;
+2. transaction/event types actually observed in the current demo datasets;
+3. any future types registered through `window.observeRegisterTransactionTypes(...)`.
+
+That means adding a new canonical event to `eventCatalog` automatically makes it appear on the For Sam page. New feature modules can also register their event types explicitly:
+
+```js
+window.observeRegisterTransactionTypes({
+  domain: 'New Feature',
+  page: 'New Feature Page',
+  level: 'Operational',
+  names: ['Thing created', 'Thing updated', 'Thing settled'],
+  description: 'Track the user, object, references, state transition and correlation ID.'
+});
+```
+
+Use that helper whenever a new Observe page introduces a transaction type that is not already represented in the canonical event catalog. This keeps the handoff checklist synchronized with future feature work.
 
 ## Important operating rules represented
 
@@ -34,6 +58,7 @@ The current repository is a dependency-free static prototype with realistic demo
 13. Gross marketplace sale value is not company revenue; only Chosen's marketplace fee belongs in company revenue reporting.
 14. Failed on-chain actions can still have real fees, so failed transactions remain in the fee ledger.
 15. Admin overrides and manual adjustments must include operator identity, reason and before/after values.
+16. Multi-chain USDC deposits are normalized into Robinhood Chain through the integrated bridge. Source principal and company-paid bridge/gas costs are tracked separately.
 
 ## Correlation IDs
 
@@ -65,6 +90,18 @@ Stock Pack Purchased
 → Portfolio Updated
 ```
 
+Example multi-chain USDC bridge:
+
+```text
+Source USDC Detected
+→ Source Confirmations Reached
+→ Bridge Route Selected
+→ Bridge Initiated
+→ Chosen Gas / Route Cost Recorded
+→ Robinhood USDC Credited
+→ Swap Reconciled
+```
+
 ## Recommended backend event envelope
 
 ```ts
@@ -90,17 +127,23 @@ interface ObserveEvent {
   stock_order_id?: string;
   stock_lot_id?: string;
   shipment_id?: string;
+  swap_id?: string;
 
   payment_rail?: 'cash' | 'usdc' | 'credits' | 'onchain' | 'internal';
   currency?: string;
   amount?: number;
 
   network?: string;
+  source_network?: string;
+  destination_network?: string;
   provider?: string;
   tx_hash?: string;
+  source_tx_hash?: string;
+  destination_tx_hash?: string;
   external_reference?: string;
 
   actual_network_fee?: number;
+  bridge_fee?: number;
   user_fee_charged?: number;
   fee_recovered?: number;
   fee_subsidy?: number;
@@ -121,7 +164,7 @@ The event table should be append-only. Current balances, portfolios, marketplace
 
 ## Domain coverage
 
-The Event Catalog in the UI contains the full tracking list across:
+The Event Catalog and For Sam page cover:
 
 - Wallet & Funding
 - Purchases
@@ -137,6 +180,7 @@ The Event Catalog in the UI contains the full tracking list across:
 - Reconciliation
 - Admin
 - Product Analytics
+- Swaps & Bridge
 
 Product analytics events such as item-detail views, marketplace filters, public-profile views and share-card actions are intentionally tagged **Analytics**. They can be retained without polluting the default operational or financial reports.
 
@@ -146,15 +190,18 @@ Replace the demo arrays in `app.js` with API queries plus a live event stream. A
 
 - append events server-side into an immutable events table;
 - stream new events to Observe with WebSocket or SSE;
-- maintain read models for purchases, reveals, vault items, marketplace, balances, stock positions, rewards and fee aggregates;
-- preserve external/provider IDs for processor, chain, brokerage/custody, shipping and supplier systems;
+- maintain read models for purchases, reveals, vault items, marketplace, balances, stock positions, swaps, rewards and fee aggregates;
+- preserve external/provider IDs for processor, chain, bridge/router, brokerage/custody, shipping and supplier systems;
 - snapshot market values with source and timestamp;
 - preserve the original crate funding rail on the resulting vault item or stock lifecycle;
+- preserve source and destination chain/transaction IDs for bridged USDC;
 - run scheduled reconciliation checks against independent sources of truth;
-- alert on stale price quotes, fairness mismatches, rail-integrity violations, negative/incorrect balances, unrecovered fees, stuck settlements and custody mismatches.
+- alert on stale price quotes, fairness mismatches, rail-integrity violations, negative/incorrect balances, unrecovered fees, failed bridges, stuck settlements and custody mismatches.
 
 ## Files
 
 - `index.html` — all Observe views and drawer shell
 - `styles.css` — responsive internal-admin UI
 - `app.js` — demo data, complete event catalog, filters, metrics, correlation timelines, CSV export and detail drawers
+- `enhancements.js` — richer simulated activity plus multi-chain USDC bridge/swap monitoring
+- `for-sam.js` — dynamic implementation handoff generated from the event catalog and current Observe datasets
