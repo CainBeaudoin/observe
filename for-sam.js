@@ -110,6 +110,106 @@
     return out.sort((a,b) => a.page.localeCompare(b.page) || a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name));
   }
 
+  function buildSamPrompt() {
+    const all = registry();
+    const grouped = new Map();
+    all.forEach(x => {
+      if (!grouped.has(x.page)) grouped.set(x.page, new Map());
+      const domains = grouped.get(x.page);
+      if (!domains.has(x.domain)) domains.set(x.domain, []);
+      domains.get(x.domain).push(x);
+    });
+
+    const eventSections = [...grouped.entries()].map(([page, domains]) => {
+      const domainText = [...domains.entries()].map(([domain, items]) => {
+        const rows = items.map(x => `- [${x.level}] ${x.name}\n  Capture: ${x.description}`).join('\n');
+        return `### ${domain}\n${rows}`;
+      }).join('\n\n');
+      return `## PAGE: ${page}\n${domainText}`;
+    }).join('\n\n');
+
+    return `You are implementing the refined production version of Observe for Chosen, an on-chain gacha / marketplace / stock platform. Use the following as the tracking and observability specification. Do not treat this as UI-only work: design the backend event model, immutable ledger, projections, reconciliation and page-level views needed to make every lifecycle auditable. Preserve existing product behavior unless a requirement below explicitly changes it.
+
+CORE ARCHITECTURE
+- Use an append-only event ledger. Never overwrite or destroy historical state transitions.
+- Every meaningful lifecycle must have an event_id, event_type, user_id when applicable, created_at/occurred_at, status and idempotency key.
+- Use correlation_id to connect multi-step flows end-to-end across pages and providers.
+- Preserve provider/order/transaction/reference IDs from payment processors, blockchains, bridge routers, stock execution/custody providers, marketplace settlement, suppliers and shipping systems.
+- Build read-optimized projections for balances, portfolios, marketplace state, vault state, stock positions, rewards, fees and Treasury; derive these from the event history.
+- Portfolios is the user 360 view. Any event involving a specific user should remain visible on its dedicated operational page AND be queryable in that user's unified Portfolio timeline.
+- Track before/after values for account/config/admin changes.
+- Keep financial, operational and analytics events distinguishable. Financial + operational tracking is core; analytics is secondary.
+
+CORE PLATFORM RULES
+- Cash, USDC and Credits are distinct rails/economies and must not be accidentally merged.
+- Preserve the original funding rail throughout each crate lifecycle.
+- Cash-funded collectible crate cashout returns Cash; USDC-funded collectible crate cashout returns USDC; Credits-funded crate settlement returns Credits/Credit Back.
+- Stock packs are Cash-only.
+- A stock win is not merely a balance number: quote, order submission, provider acknowledgement, fills, average execution price, slippage, execution/network fees, lot assignment, custody confirmation and reconciliation should be traceable.
+- Once stock is acquired and assigned, principal belongs to the user. A later sell liquidates that user's holding; platform exposure is execution/network cost and any configured fee/recovery, not the stock principal again.
+- Multi-chain USDC deposits may arrive from supported networks and are normalized to Robinhood Chain. Chosen pays bridge/gas/routing costs, while user principal remains separate from those company expenses.
+- Gross marketplace sale value is not company revenue. Only Chosen's marketplace fee is revenue. Buyer reserve, seller proceeds, ownership transfer and settlement finality should be independently traceable.
+- Failed blockchain actions may still incur real gas/route costs and must remain in fee accounting.
+- Physical prizes need ownership, FMV, supplier/inventory cost basis, pending exposure and 365-day state.
+- Treasury must distinguish user principal/liabilities/reserves from actual revenue and real expenses.
+- Continuous market price ticks should live in time-series data; create operational events for meaningful price snapshots, stale quotes, provider failover or divergence rather than flooding the activity ledger with every tick.
+
+MINIMUM FIELDS ON EVERY EVENT
+Identity: event_id, event_type, user_id where applicable, created_at/occurred_at.
+Linkage: correlation_id, idempotency_key, parent/reference IDs, counterparty_user_id when applicable.
+Financial context when relevant: amount, currency, payment rail, source/destination network, provider, tx hash, actual network/execution fee, user fee, recovered amount, subsidy, before/after balance.
+State: status, before/after values, error/reason, metadata, external/provider reference.
+Domain-specific IDs when relevant: purchase_id, reveal_id, inventory_item_id, listing_id, offer_id, stock_order_id, stock_lot_id, shipment_id, swap_id.
+
+IMPLEMENTATION REQUIREMENTS
+1. Implement all Financial and Operational event types below as first-class trackable states where they are applicable to the product.
+2. Keep Analytics events separate from financial/operational reporting.
+3. Do not collapse multi-step flows into one opaque row. For example, an accepted marketplace offer should still show reserve/debit, fee, seller credit, ownership transfer and settlement finality as correlated events.
+4. Every user-specific event should also be discoverable in that user's Portfolio ledger, including username/wallet/account status/risk changes.
+5. Reconciliation should compare internal projections against independent sources of truth and surface mismatches, orphan transactions, stale quotes, custody differences and stuck flows.
+6. If a listed event does not apply to the current implementation, preserve it in the event registry/spec instead of silently deleting it.
+7. When adding a new product flow later, register its new transaction/event types so the For Sam handoff remains automatically synchronized.
+
+TRACKING CHECKLIST (${all.length} CURRENT TYPES)
+
+${eventSections}
+
+DELIVERABLE
+Refine the existing implementation around this event model. Map each current product action to the relevant event types, define the schemas/state transitions, implement or preserve the page-level views, and make Portfolios the unified per-user audit trail. Prioritize correctness, traceability, idempotency, reconciliation and accurate separation of user principal vs platform revenue/cost. Do not remove existing working features simply because they are not explicitly repeated in this prompt.`;
+  }
+
+  async function copySamPrompt() {
+    const button = document.getElementById('samCopyPrompt');
+    const prompt = buildSamPrompt();
+    let copied = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(prompt);
+        copied = true;
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = prompt;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        copied = document.execCommand('copy');
+        textarea.remove();
+      }
+    } catch (_) {
+      copied = false;
+    }
+
+    if (button) {
+      const original = button.dataset.originalText || 'Copy AI prompt';
+      button.dataset.originalText = original;
+      button.textContent = copied ? `Copied ${registry().length} types ✓` : 'Copy failed — try again';
+      setTimeout(() => { button.textContent = original; }, 2200);
+    }
+    if (copied && typeof toast === 'function') toast('Full For Sam AI prompt copied');
+  }
+
   function injectUI() {
     const subnav = document.querySelector('.subnav');
     if (subnav && !subnav.querySelector('[data-view="sam"]')) {
@@ -141,7 +241,10 @@
             <h2>Everything Sam should track</h2>
             <p>This page is the implementation handoff: every transaction, state change and operational event currently defined or observed across Observe. It is generated from the same canonical event catalog and live page datasets, so new registered event types automatically appear here.</p>
           </div>
-          <div class="timestamp">Auto-generated from Observe</div>
+          <div class="panel-tools" style="justify-content:flex-end">
+            <div class="timestamp">Auto-generated from Observe</div>
+            <button class="outline-button" id="samCopyPrompt" type="button">Copy AI prompt</button>
+          </div>
         </div>
         <div class="metric-grid four" id="samMetrics"></div>
         <div class="panel">
@@ -212,6 +315,7 @@
 
   injectUI();
   renderers.sam = renderForSam;
+  document.getElementById('samCopyPrompt')?.addEventListener('click', copySamPrompt);
   document.getElementById('samSearch')?.addEventListener('input', renderForSam);
   document.getElementById('samPage')?.addEventListener('change', renderForSam);
   document.getElementById('samLevel')?.addEventListener('change', renderForSam);
