@@ -113,8 +113,8 @@ td{height:44px;padding:7px 11px}
 #view-purchases .table-wrap{max-height:clamp(290px,42vh,480px)}
 #view-reveals .table-wrap{max-height:clamp(360px,64vh,700px)}
 #view-market .table-wrap{max-height:clamp(360px,64vh,700px)}
-#view-wallets>.panel .table-wrap{max-height:clamp(270px,38vh,430px)}
-#coinflowPaymentsPanel .table-wrap{max-height:clamp(300px,43vh,500px)}
+#view-wallets>.panel .table-wrap{max-height:clamp(260px,36vh,410px)}
+#coinflowPaymentsPanel .table-wrap{max-height:clamp(320px,48vh,560px)}
 #view-swaps .table-wrap{max-height:clamp(360px,60vh,680px)!important}
 #view-fees .table-wrap{max-height:clamp(340px,58vh,640px)}
 #view-rewards .table-wrap{max-height:clamp(340px,58vh,640px)}
@@ -164,14 +164,67 @@ td{height:44px;padding:7px 11px}
 #coinflowPaymentsPanel{order:3}
 #view-wallets>.panel:not(#coinflowPaymentsPanel){order:4}
 
-/* Coinflow/payment page: use the same 8px internal rhythm, with no matched-height whitespace. */
-#view-wallets>.two-col,
-#coinflowPaymentsPanel .two-col{align-items:start}
+/* Payments second pass: remove the lopsided two-column blocks that created dead space. */
+#view-wallets>#walletMetrics .metric-card{min-height:78px;padding:9px 11px}
+#view-wallets>.two-col{
+  grid-template-columns:1fr;
+  gap:var(--page-gap);
+}
+#view-wallets>.two-col>.panel{width:100%}
+
+/* Balance movement uses the whole row; each rail becomes a compact horizontal module. */
+#view-wallets>.two-col>.panel:first-child .bar-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:8px;
+  padding:8px 12px 10px;
+}
+#view-wallets>.two-col>.panel:first-child .bar-row{
+  grid-template-columns:110px minmax(90px,1fr) 72px;
+  gap:8px;
+  min-width:0;
+  padding:2px 0;
+}
+
+/* Payment controls become one dense horizontal strip instead of a tall right-hand container. */
+#view-wallets>.two-col>.panel:nth-child(2) .control-list{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  padding:0;
+}
+#view-wallets>.two-col>.panel:nth-child(2) .control-list>div{
+  min-height:54px;
+  padding:9px 11px;
+  border-bottom:0;
+  border-right:1px solid #1b242b;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:5px;
+}
+#view-wallets>.two-col>.panel:nth-child(2) .control-list>div:last-child{border-right:0}
+#view-wallets>.two-col>.panel:nth-child(2) .control-list>div>span{
+  text-align:left;
+  white-space:normal;
+}
+
+/* Coinflow is an operations surface, not an implementation-spec page. Keep the useful metrics + live ledger; the detailed field/lifecycle spec already lives in For Sam. */
 #coinflowPaymentsPanel{display:block}
-#coinflowPaymentsPanel>.metric-grid{padding:var(--page-gap) 12px 0!important;margin:0!important}
-#coinflowPaymentsPanel>.two-col{padding:var(--page-gap) 12px var(--page-gap)!important;gap:var(--page-gap)}
-#coinflowPaymentsPanel .two-col>.panel{height:auto!important;min-height:0!important;margin:0!important}
-#coinflowPaymentsPanel .control-list>div{min-height:36px;padding:7px 10px}
+#coinflowPaymentsPanel>.metric-grid{
+  padding:8px 12px!important;
+  margin:0!important;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+#coinflowPaymentsPanel>.metric-grid .metric-card{min-height:72px;padding:9px 10px}
+#coinflowPaymentsPanel>.metric-grid .metric-label{margin-bottom:5px}
+#coinflowPaymentsPanel>.metric-grid .metric-value{font-size:18px;margin-bottom:3px}
+#coinflowPaymentsPanel>.two-col{display:none!important}
+#coinflowPaymentsPanel>.table-wrap{border-top:1px solid var(--border)}
+#coinflowPaymentsPanel .panel-header.wrap{padding:9px 12px}
+
+/* Keep the final balance ledger useful without making the whole page excessively tall. */
+#view-wallets>.panel:not(#coinflowPaymentsPanel) .table-wrap{max-height:clamp(240px,32vh,360px)}
 
 /* For Sam is long by design, so it gets one contained handoff scroll surface with sticky page-group headers. */
 #samCoreNote{margin:0!important}
@@ -201,10 +254,14 @@ td{height:44px;padding:7px 11px}
 
 @media(max-width:1350px){
   .portfolio-grid,.catalog-grid{grid-template-columns:repeat(3,minmax(220px,1fr))}
+  #view-wallets>.two-col>.panel:nth-child(2) .control-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #view-wallets>.two-col>.panel:nth-child(2) .control-list>div{border-bottom:1px solid #1b242b}
 }
 @media(max-width:1180px){
   .portfolio-grid,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .content{padding:12px 16px 18px}
+  #coinflowPaymentsPanel>.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-wallets>.two-col>.panel:first-child .bar-list{grid-template-columns:1fr}
 }
 @media(max-width:860px){
   :root{--topbar-compact:60px;--page-gap:7px}
@@ -213,6 +270,7 @@ td{height:44px;padding:7px 11px}
   .two-col{grid-template-columns:1fr}
   .table-wrap,#view-activity .table-wrap,#view-purchases .table-wrap,#view-reveals .table-wrap,#view-market .table-wrap,#view-wallets>.panel .table-wrap,#coinflowPaymentsPanel .table-wrap,#view-swaps .table-wrap,#view-fees .table-wrap,#view-rewards .table-wrap,#view-recon .table-wrap{max-height:58vh!important}
   .catalog-grid,.portfolio-grid,#samChecklist{max-height:62vh}
+  #view-wallets>.two-col>.panel:nth-child(2) .control-list{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:620px){
   :root{--page-gap:6px}
@@ -222,4 +280,7 @@ td{height:44px;padding:7px 11px}
   .metric-value{font-size:18px}
   .portfolio-grid,.catalog-grid{grid-template-columns:1fr}
   .panel-header{align-items:flex-start}
+  #view-wallets>.two-col>.panel:nth-child(2) .control-list{grid-template-columns:1fr}
+  #view-wallets>.two-col>.panel:nth-child(2) .control-list>div{min-height:42px;border-right:0}
+  #coinflowPaymentsPanel>.metric-grid{grid-template-columns:1fr 1fr}
 }
